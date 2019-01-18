@@ -126,7 +126,7 @@ func transformation(d, s image.Image) error {
 	rotateDest270.GeoM.Translate(float64(src.Bounds().Dx()/2), float64(src.Bounds().Dy()/2))
 	rotateDest270.CompositeMode = ebiten.CompositeModeDestinationOver
 
-	modes := []struct {
+	transformations := []struct {
 		name string
 		op   *ebiten.DrawImageOptions
 	}{
@@ -138,8 +138,7 @@ func transformation(d, s image.Image) error {
 		{"FlipVertical", flipVertical},
 	}
 	var table string
-
-	modes2 := []struct {
+	transformations2 := []struct {
 		name string
 		op   *ebiten.DrawImageOptions
 	}{
@@ -150,7 +149,7 @@ func transformation(d, s image.Image) error {
 	}
 
 	var j int
-	for i, o := range modes2 {
+	for i, o := range transformations2 {
 		filename := fmt.Sprintf("examples/%s.png", o.name)
 		tmp, _ := ebiten.NewImageFromImage(src, ebiten.FilterDefault)
 		if err := tmp.DrawImage(dst, o.op); err != nil {
@@ -167,7 +166,52 @@ func transformation(d, s image.Image) error {
 		}
 		j++
 	}
-	for i, o := range modes {
+	for i, o := range transformations {
+		filename := fmt.Sprintf("examples/%s.png", o.name)
+		tmp, _ := ebiten.NewImageFromImage(dst, ebiten.FilterDefault)
+		if err := tmp.DrawImage(src, o.op); err != nil {
+			gfx.Log("couldn't draw image %s: %s", filename, err)
+		}
+		err := gfx.SavePNG(filename, tmp)
+		if err != nil {
+			return errors.Errorf("failed to save image:", err)
+		}
+
+		table += fmt.Sprintf("![example:%s](%s)<br>[%s](%s) |", o.name, filename, o.name, filename)
+		if (i+j)%4 == 4-1 {
+			table += "\n"
+		}
+	}
+	ioutil.WriteFile("EXAMPLES_2.md", []byte(header4+table), 0644)
+
+	resize := &ebiten.DrawImageOptions{}
+	resize.GeoM.Scale(0.5, 0.5)
+
+	resizeInPlace := &ebiten.DrawImageOptions{}
+	resizeInPlace.GeoM.Scale(0.5, 0.5)
+	resizeInPlace.GeoM.Translate(float64(src.Bounds().Dx()/4), float64(src.Bounds().Dy()/4))
+
+	resizeOffset := &ebiten.DrawImageOptions{}
+	resizeOffset.GeoM.Scale(0.5, 0.5)
+	resizeOffset.GeoM.Translate(float64(src.Bounds().Dx()/2), float64(src.Bounds().Dy()/2))
+
+	resizeLarger := &ebiten.DrawImageOptions{}
+	resizeLarger.GeoM.Scale(2, 2)
+	resizeLarger.GeoM.Translate(-float64(src.Bounds().Dx()/2), -float64(src.Bounds().Dy()/2))
+
+	transformations3 := []struct {
+		name string
+		op   *ebiten.DrawImageOptions
+	}{
+		{"Normal", &ebiten.DrawImageOptions{}},
+		{"Resize", resize},
+		{"ResizeInPlace", resizeInPlace},
+		{"ResizeOffset", resizeOffset},
+		{"ResizeLarger", resizeLarger},
+	}
+
+	table = ""
+	for i, o := range transformations3 {
 		filename := fmt.Sprintf("examples/%s.png", o.name)
 		tmp, _ := ebiten.NewImageFromImage(dst, ebiten.FilterDefault)
 		if err := tmp.DrawImage(src, o.op); err != nil {
@@ -184,9 +228,103 @@ func transformation(d, s image.Image) error {
 		}
 	}
 
-	ioutil.WriteFile("EXAMPLES_2.md", []byte(header4+table), 0644)
+	ioutil.WriteFile("EXAMPLES_3.md", []byte(header4+table), 0644)
 
 	return nil
+}
+
+func resize(s, d image.Image) error {
+	src, _ := ebiten.NewImageFromImage(s, ebiten.FilterDefault)
+	dst, _ := ebiten.NewImageFromImage(d, ebiten.FilterDefault)
+
+	resize := &ebiten.DrawImageOptions{}
+	resize.GeoM.Scale(0.5, 0.5)
+
+	resizeInPlace := &ebiten.DrawImageOptions{}
+	resizeInPlace.GeoM.Scale(0.5, 0.5)
+	resizeInPlace.GeoM.Translate(float64(src.Bounds().Dx()/4), float64(src.Bounds().Dy()/4))
+
+	resizeOffset := &ebiten.DrawImageOptions{}
+	resizeOffset.GeoM.Scale(0.5, 0.5)
+	resizeOffset.GeoM.Translate(float64(src.Bounds().Dx()/2), float64(src.Bounds().Dy()/2))
+
+	resizeLarger := &ebiten.DrawImageOptions{}
+	resizeLarger.GeoM.Scale(2, 2)
+	resizeLarger.GeoM.Translate(-float64(src.Bounds().Dx()/2), -float64(src.Bounds().Dy()/2))
+
+	transformations3 := []struct {
+		name string
+		op   *ebiten.DrawImageOptions
+	}{
+		{"Normal", &ebiten.DrawImageOptions{}},
+		{"Resize", resize},
+		{"ResizeInPlace", resizeInPlace},
+		{"ResizeOffset", resizeOffset},
+		{"ResizeLarger", resizeLarger},
+	}
+
+	var table string
+	for i, o := range transformations3 {
+		filename := fmt.Sprintf("examples/%s.png", o.name)
+		tmp, _ := ebiten.NewImageFromImage(dst, ebiten.FilterDefault)
+		if err := tmp.DrawImage(src, o.op); err != nil {
+			gfx.Log("couldn't draw image %s: %s", filename, err)
+		}
+		err := gfx.SavePNG(filename, tmp)
+		if err != nil {
+			return errors.Errorf("failed to save image:", err)
+		}
+
+		table += fmt.Sprintf("![example:%s](%s)<br>[%s](%s) |", o.name, filename, o.name, filename)
+		if i%4 == 4-1 {
+			table += "\n"
+		}
+	}
+
+	name := "Padded"
+	tmp, _ := ebiten.NewImage(src.Bounds().Dx()*2, src.Bounds().Dy()*2, ebiten.FilterDefault)
+
+	// Draw image
+	op := &ebiten.DrawImageOptions{}
+	op.GeoM.Translate(float64(src.Bounds().Dx()/2), float64(src.Bounds().Dy()/2))
+	col := RenderImg(src, tmp, name, op)
+	table += col
+
+	name = "PaddedResized"
+	tmp, _ = ebiten.NewImage(src.Bounds().Dx()*2, src.Bounds().Dy()*2, ebiten.FilterDefault)
+
+	// Draw image
+	op = &ebiten.DrawImageOptions{}
+	op.GeoM.Scale(2, 2)
+	col = RenderImg(src, tmp, name, op)
+	table += col
+
+	name = "ResizeLargerCorrect"
+	tmp, _ = ebiten.NewImage(src.Bounds().Dx()*2, src.Bounds().Dy()*2, ebiten.FilterDefault)
+	op = &ebiten.DrawImageOptions{}
+	op.GeoM.Scale(2, 2)
+	tmp.DrawImage(src, op)
+
+	op2 := &ebiten.DrawImageOptions{}
+	op2.CompositeMode = ebiten.CompositeModeDestinationOver
+	op2.GeoM.Translate(float64(src.Bounds().Dx()/2), float64(src.Bounds().Dy()/2))
+	col = RenderImg(dst, tmp, name, op2)
+	table += col
+
+	ioutil.WriteFile("EXAMPLES_3.md", []byte(header4+table), 0644)
+	return nil
+}
+
+func RenderImg(src, dst *ebiten.Image, name string, op *ebiten.DrawImageOptions) string {
+	filename := fmt.Sprintf("examples/%s.png", name)
+	if err := dst.DrawImage(src, op); err != nil {
+		gfx.Log("couldn't draw image %s: %s", filename, err)
+	}
+	err := gfx.SavePNG(filename, dst)
+	if err != nil {
+		log.Fatal(err)
+	}
+	return fmt.Sprintf("![example:%s](%s)<br>[%s](%s) |", name, filename, name, filename)
 }
 
 type Images struct {
@@ -197,6 +335,7 @@ type Images struct {
 func (i *Images) update(screen *ebiten.Image) error {
 	porterDuffComposition(i.src, i.dst)
 	transformation(i.src, i.dst)
+	resize(i.src, i.dst)
 	return gfx.ErrDone
 }
 

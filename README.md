@@ -23,6 +23,13 @@ A collection of image operations, implemented as an exercises in 2d graphics.
 |                 ![example:Normal](examples/Normal.png)<br>[Normal](examples/Normal.png)                 |         ![example:Rotate90](examples/Rotate90.png)<br>[Rotate90](examples/Rotate90.png)         |         ![example:Rotate180](examples/Rotate180.png)<br>[Rotate180](examples/Rotate180.png)         |         ![example:Rotate270](examples/Rotate270.png)<br>[Rotate270](examples/Rotate270.png)         |
 | ![example:FlipHorizontal](examples/FlipHorizontal.png)<br>[FlipHorizontal](examples/FlipHorizontal.png) | ![example:FlipVertical](examples/FlipVertical.png)<br>[FlipVertical](examples/FlipVertical.png) |
 
+### Resize
+
+|                                             &nbsp;                                              |                                 &nbsp;                                  |                                               &nbsp;                                                |                                                           &nbsp;                                                            |
+| :---------------------------------------------------------------------------------------------: | :---------------------------------------------------------------------: | :-------------------------------------------------------------------------------------------------: | :-------------------------------------------------------------------------------------------------------------------------: |
+|             ![example:Normal](examples/Normal.png)<br>[Normal](examples/Normal.png)             | ![example:Resize](examples/Resize.png)<br>[Resize](examples/Resize.png) | ![example:ResizeInPlace](examples/ResizeInPlace.png)<br>[ResizeInPlace](examples/ResizeInPlace.png) |               ![example:ResizeOffset](examples/ResizeOffset.png)<br>[ResizeOffset](examples/ResizeOffset.png)               |
+| ![example:ResizeLarger](examples/ResizeLarger.png)<br>[ResizeLarger](examples/ResizeLarger.png) | ![example:Padded](examples/Padded.png)<br>[Padded](examples/Padded.png) | ![example:PaddedResized](examples/PaddedResized.png)<br>[PaddedResized](examples/PaddedResized.png) | ![example:ResizeLargerCorrect](examples/ResizeLargerCorrect.png)<br>[ResizeLargerCorrect](examples/ResizeLargerCorrect.png) |
+
 ## Plan
 
 - **Porter/Duff composition**
@@ -45,7 +52,7 @@ A collection of image operations, implemented as an exercises in 2d graphics.
 
   - [x] Flip horizontally/vertically
   - [x] Rotate
-  - [ ] Resized
+  - [x] Resized
 
 - **Effects**
   - [ ] Blur
