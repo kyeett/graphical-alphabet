@@ -57,19 +57,12 @@ func porterDuffComposition(s, d image.Image) error {
 
 	var table string
 	for i, o := range modes {
-		filename := fmt.Sprintf("examples/%s.png", o.name)
-		tmp, _ := ebiten.NewImageFromImage(dst, ebiten.FilterDefault)
 		op := &ebiten.DrawImageOptions{}
 		op.CompositeMode = o.op
-		if err := tmp.DrawImage(src, op); err != nil {
-			gfx.Log("couldn't draw image %s: %s", filename, err)
-		}
-		err := gfx.SavePNG(filename, tmp)
-		if err != nil {
-			return errors.Errorf("failed to save image:", err)
-		}
+		tmp, _ := ebiten.NewImageFromImage(dst, ebiten.FilterDefault)
+		col := RenderImg(src, tmp, o.name, op)
+		table += col
 
-		table += fmt.Sprintf("![example:%s](%s)<br>[%s](%s) |", o.name, filename, o.name, filename)
 		if i%5 == 5-1 {
 			table += "\n"
 		}
@@ -150,86 +143,24 @@ func transformation(d, s image.Image) error {
 
 	var j int
 	for i, o := range transformations2 {
-		filename := fmt.Sprintf("examples/%s.png", o.name)
 		tmp, _ := ebiten.NewImageFromImage(src, ebiten.FilterDefault)
-		if err := tmp.DrawImage(dst, o.op); err != nil {
-			gfx.Log("couldn't draw image %s: %s", filename, err)
-		}
-		err := gfx.SavePNG(filename, tmp)
-		if err != nil {
-			return errors.Errorf("failed to save image:", err)
-		}
-
-		table += fmt.Sprintf("![example:%s](%s)<br>[%s](%s) |", o.name, filename, o.name, filename)
+		col := RenderImg(dst, tmp, o.name, o.op)
+		table += col
 		if i%4 == 4-1 {
 			table += "\n"
 		}
 		j++
 	}
 	for i, o := range transformations {
-		filename := fmt.Sprintf("examples/%s.png", o.name)
 		tmp, _ := ebiten.NewImageFromImage(dst, ebiten.FilterDefault)
-		if err := tmp.DrawImage(src, o.op); err != nil {
-			gfx.Log("couldn't draw image %s: %s", filename, err)
-		}
-		err := gfx.SavePNG(filename, tmp)
-		if err != nil {
-			return errors.Errorf("failed to save image:", err)
-		}
-
-		table += fmt.Sprintf("![example:%s](%s)<br>[%s](%s) |", o.name, filename, o.name, filename)
+		col := RenderImg(src, tmp, o.name, o.op)
+		table += col
 		if (i+j)%4 == 4-1 {
 			table += "\n"
 		}
 	}
+
 	ioutil.WriteFile("EXAMPLES_2.md", []byte(header4+table), 0644)
-
-	resize := &ebiten.DrawImageOptions{}
-	resize.GeoM.Scale(0.5, 0.5)
-
-	resizeInPlace := &ebiten.DrawImageOptions{}
-	resizeInPlace.GeoM.Scale(0.5, 0.5)
-	resizeInPlace.GeoM.Translate(float64(src.Bounds().Dx()/4), float64(src.Bounds().Dy()/4))
-
-	resizeOffset := &ebiten.DrawImageOptions{}
-	resizeOffset.GeoM.Scale(0.5, 0.5)
-	resizeOffset.GeoM.Translate(float64(src.Bounds().Dx()/2), float64(src.Bounds().Dy()/2))
-
-	resizeLarger := &ebiten.DrawImageOptions{}
-	resizeLarger.GeoM.Scale(2, 2)
-	resizeLarger.GeoM.Translate(-float64(src.Bounds().Dx()/2), -float64(src.Bounds().Dy()/2))
-
-	transformations3 := []struct {
-		name string
-		op   *ebiten.DrawImageOptions
-	}{
-		{"Normal", &ebiten.DrawImageOptions{}},
-		{"Resize", resize},
-		{"ResizeInPlace", resizeInPlace},
-		{"ResizeOffset", resizeOffset},
-		{"ResizeLarger", resizeLarger},
-	}
-
-	table = ""
-	for i, o := range transformations3 {
-		filename := fmt.Sprintf("examples/%s.png", o.name)
-		tmp, _ := ebiten.NewImageFromImage(dst, ebiten.FilterDefault)
-		if err := tmp.DrawImage(src, o.op); err != nil {
-			gfx.Log("couldn't draw image %s: %s", filename, err)
-		}
-		err := gfx.SavePNG(filename, tmp)
-		if err != nil {
-			return errors.Errorf("failed to save image:", err)
-		}
-
-		table += fmt.Sprintf("![example:%s](%s)<br>[%s](%s) |", o.name, filename, o.name, filename)
-		if (i+j)%4 == 4-1 {
-			table += "\n"
-		}
-	}
-
-	ioutil.WriteFile("EXAMPLES_3.md", []byte(header4+table), 0644)
-
 	return nil
 }
 
@@ -256,7 +187,7 @@ func resize(s, d image.Image) error {
 		name string
 		op   *ebiten.DrawImageOptions
 	}{
-		{"Normal", &ebiten.DrawImageOptions{}},
+		{"Before", &ebiten.DrawImageOptions{}},
 		{"Resize", resize},
 		{"ResizeInPlace", resizeInPlace},
 		{"ResizeOffset", resizeOffset},
